@@ -623,36 +623,60 @@ def create_summary(filename, params, results):
 
         in_taxa = sum(bp['num_sequences'] for bp in bps)
         ncbi_in_taxa = 0
-        clade_bps = dict((t.name, []) for t in gbt.get_top_taxa())  # Use tree sorting
-        clade_min_species = dict((t.name, (10000000, ''))for t in gbt.get_top_taxa())
-        clade_max_species = dict((t.name, (0, ''))for t in gbt.get_top_taxa())
+        if params.clade:
+            clade_bps = dict((t.name, []) for t in gbt.get_top_taxa())  # Use tree sorting
+            clade_min_species = dict((t.name, (10000000, ''))for t in gbt.get_top_taxa())
+            clade_max_species = dict((t.name, (0, ''))for t in gbt.get_top_taxa())
+
         for bp in results.taxid_2_bp.values():
             if bp['taxon'].rank == rank:
-                clade = bp['top_taxa']
-                clade_bps[clade].append(bp['data'])
                 ns = (nsb.get(bp['taxon'].taxid), bp['taxon'].name)
                 ncbi_in_taxa += ns[0]
-                clade_min_species[clade] = min(clade_min_species[clade], ns)
-                clade_max_species[clade] = max(clade_max_species[clade], ns)
+                if params.clade:
+                    clade = bp['top_taxa']
+                    clade_bps[clade].append(bp['data'])
+                    clade_min_species[clade] = min(clade_min_species[clade], ns)
+                    clade_max_species[clade] = max(clade_max_species[clade], ns)
+
         #
-        clade_bps = list(clade_bps.items())  # Shorter
-        taxa_in_clades = ' ; ' + ', '.join(f'{c} - {len(_bps)}' for c, _bps in clade_bps)
-        seq_in_clades = ' ; ' + ', '.join(f'{c} - {sum(bp["num_sequences"] for bp in _bps)}' for c, _bps in clade_bps)
-        min_in_clades = [(c, min(_bps, key=lambda x: x['num_sequences'])) for c, _bps in clade_bps]
-        min_in_clades = ', '.join(f'{c} - {bp["taxon_name"]} ({bp["num_sequences"]})' for c, bp in min_in_clades)
-        max_in_clades = [(c, max(_bps, key=lambda x: x['num_sequences'])) for c, _bps in clade_bps]
-        max_in_clades = ', '.join(f'{c} - {bp["taxon_name"]} ({bp["num_sequences"]})' for c, bp in max_in_clades)
-        wide_in_clades = ' ; ' + ', '.join(f'{c} - {sum(int(bp["wide"]) for bp in _bps)}' for c, _bps in clade_bps)
-        taxa_outliers_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(len(_bps), sum(int(bool(bp["num_lo"] or bp["num_hi"])) for bp in _bps))}' for c, _bps in clade_bps)
-        outliers_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(clade_2_num_seq[c], sum(bp["num_lo"] + bp["num_hi"] for bp in _bps))}' for c, _bps in clade_bps)
-
-        (('Genus', params.genus_iqr_median), ('Family', params.family_iqr_median))
-
         iqrm_ps = [0.3, 0.5] + list(range(1, 11))
         iqrm_in_clases = ''
-        for c, _bps in clade_bps:
-            _ims = [x['iqr_median'] for x in _bps]
-            iqrm_in_clases += f"\n    {c:>21}  : {', '.join(f'{p}-{sum(int(x > p) for x in _ims)}' for p in iqrm_ps)}"
+
+        #
+        if params.clade:
+            clade_bps = list(clade_bps.items())  # Shorter
+            taxa_in_clades = ' ; ' + ', '.join(f'{c} - {len(_bps)}' for c, _bps in clade_bps)
+            seq_in_clades = ' ; ' + ', '.join(f'{c} - {sum(bp["num_sequences"] for bp in _bps)}' for c, _bps in clade_bps)
+            min_in_clades = [(c, min(_bps, key=lambda x: x['num_sequences'])) for c, _bps in clade_bps]
+            min_in_clades = ', '.join(f'{c} - {bp["taxon_name"]} ({bp["num_sequences"]})' for c, bp in min_in_clades)
+            max_in_clades = [(c, max(_bps, key=lambda x: x['num_sequences'])) for c, _bps in clade_bps]
+            max_in_clades = ', '.join(f'{c} - {bp["taxon_name"]} ({bp["num_sequences"]})' for c, bp in max_in_clades)
+            wide_in_clades = ' ; ' + ', '.join(f'{c} - {sum(int(bp["wide"]) for bp in _bps)}' for c, _bps in clade_bps)
+            taxa_outliers_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(len(_bps), sum(int(bool(bp["num_lo"] or bp["num_hi"])) for bp in _bps))}' for c, _bps in clade_bps)
+            outliers_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(clade_2_num_seq[c], sum(bp["num_lo"] + bp["num_hi"] for bp in _bps))}' for c, _bps in clade_bps)
+            for c, _bps in clade_bps:
+                _ims = [x['iqr_median'] for x in _bps]
+                iqrm_in_clases += f"\n    {c:>21}  : {', '.join(f'{p}-{sum(int(x > p) for x in _ims)}' for p in iqrm_ps)}"
+            wide_genus_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(len(_bps), sum(int(bp["iqr_median"] > params.genus_iqr_median) for bp in _bps))}' for c, _bps in clade_bps)
+            wide_family_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(len(_bps), sum(int(bp["iqr_median"] > params.family_iqr_median) for bp in _bps))}' for c, _bps in clade_bps)
+
+            min_max_clade = f"""
+    minimal sequences      : {min_in_clades}
+    maximal sequences      : {max_in_clades}"""
+            min_max_ncbi_clade = f"""
+    minimal NCBI species   : {', '.join(f'{c} - {t} ({n})' for c, (n, t) in clade_min_species.items())}
+    maximal NCBI species   : {', '.join(f'{c} - {t} ({n})' for c, (n, t) in clade_max_species.items())}"""
+
+        else:
+            taxa_in_clades = ''
+            seq_in_clades = ''
+            wide_in_clades = ''
+            taxa_outliers_in_clades = ''
+            outliers_in_clades = ''
+            wide_genus_in_clades = ''
+            wide_family_in_clades = ''
+            min_max_clade = ''
+            min_max_ncbi_clade = ''
 
         iqr_meds = [x['iqr_median'] for x in bps]
 
@@ -661,18 +685,11 @@ def create_summary(filename, params, results):
         num_all = num_los + num_his
         num_taxa = sum(int(bool(bp['num_lo'] or bp['num_hi'])) for bp in bps)
 
-        wide_genus_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(len(_bps), sum(int(bp["iqr_median"] > params.genus_iqr_median) for bp in _bps))}' for c, _bps in clade_bps)
-        wide_family_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(len(_bps), sum(int(bp["iqr_median"] > params.family_iqr_median) for bp in _bps))}' for c, _bps in clade_bps)
-
         return f"""{label}
   Data
     with enough sequences  : {len(bps):>4}  (minimal sequences {min_seq}){taxa_in_clades}
-    sequences in all calcs : {in_taxa:>4}  ({_perc(in_taxa / len(results.sequence_data))}){seq_in_clades}
-    minimal sequences      : {min_in_clades}
-    maximal sequences      : {max_in_clades}
-    NCBI species in taxa   : {ncbi_in_taxa}  ({_perc(in_taxa / ncbi_in_taxa)})
-    minimal NCBI species   : {', '.join(f'{c} - {t} ({n})' for c, (n, t) in clade_min_species.items())}
-    maximal NCBI species   : {', '.join(f'{c} - {t} ({n})' for c, (n, t) in clade_max_species.items())}
+    sequences in all calcs : {in_taxa:>4}  ({_perc(in_taxa / len(results.sequence_data))}){seq_in_clades}{min_max_clade}
+    NCBI species in taxa   : {ncbi_in_taxa}  ({_perc(in_taxa / ncbi_in_taxa)}){min_max_ncbi_clade}
   Box plot
     wide distribution      : {sum(int(x > iqr_median) for x in iqr_meds):>4}{wide_in_clades}
          by genus perc     : {_pp(len(bps), sum(int(x > params.genus_iqr_median) for x in iqr_meds))}{wide_genus_in_clades}
@@ -768,13 +785,19 @@ def create_figure_data(base_name, fd_filename, params, results):
     # Data, list of dicts with family data:
     #   clade, order, family, num_species, num_sequences, list of publishing dates, list of lengths
     nsb = _NumSpeciesBelow(params.cache_dir)
-    data = [dict(clade=taxons[0].name,
-                 order=taxons[1].name,
-                 family=taxons[2].name,
-                 num_species=nsb.get(taxons[2].taxid),
-                 num_sequences=len(taxons[2].sequence_data),
-                 dates=[s['updated'] for s in taxons[2].sequence_data],
-                 lengths=taxons[2].lengths)
+    if params.clade:
+        c_m = lambda taxons: taxons[0].name
+        o_idx, f_idx = 1, 2
+    else:
+        c_m = lambda taxons: ''
+        o_idx, f_idx = 0, 1
+    data = [dict(clade=c_m(taxons),
+                 order=taxons[o_idx].name,
+                 family=taxons[f_idx].name,
+                 num_species=nsb.get(taxons[f_idx].taxid),
+                 num_sequences=len(taxons[f_idx].sequence_data),
+                 dates=[s['updated'] for s in taxons[f_idx].sequence_data],
+                 lengths=taxons[f_idx].lengths)
             for taxons in results.gbt_s.iterate_by_rank('family')
             if len(taxons[-1].sequence_data) >= params.family_min_sequences]
     nsb.save()
