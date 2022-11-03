@@ -410,7 +410,7 @@ def graph_wide_genera(data, clade_names, ncols):
                      flierprops=dict(marker='.'))
 
         # General
-        axis.set_title(f"{g_data['genus']}, {g_data['family']}\nn = {len(g_data['lengths'])}, IQR/med = {g_data['iqr_median']}%",
+        axis.set_title(f"${g_data['genus']}$, {g_data['family']}\nn = {len(g_data['lengths'])}, IQR/med = {g_data['iqr_median']}%",
                        color=gen_color)
         _w_axis(axis, 2)
 

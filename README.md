@@ -57,7 +57,7 @@ python3 survey.py asterids rosids -c asterids -c rosids -p 2022-10-22
 # With main script, add -i switch
 python3 survey.py asterids rosids -c asterids -c rosids -p 2022-10-22 -i
 # With survey_figures.py script. Figure descriptions correspond to Figures in the article.
-python3 survey_figures.py {data|im|wf|wg}
+python3 survey_figures.py <figures_data.json filename> {data|im|wf|wg}
 ```
 
 ## Requirements
