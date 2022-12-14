@@ -293,7 +293,7 @@ def graph_iqr_median(iqr_median, histogram_max, histogram_bins):
     axis.set_xticklabels([f'{p}%' for p in range(histogram_max)] + [f'>{histogram_max}%'])
 
     axis.set_ylabel('No. of sequences')
-    axis.vlines([histogram_bins], *axis.get_ylim(), colors='lightgray', linewidth=2, linestyles='dashed', zorder=-1)
+    axis.vlines([histogram_bins, 10 * histogram_bins - 0.5], *axis.get_ylim(), colors='lightgray', linewidth=2, linestyles='dashed', zorder=-1)
 
     # axis.legend()
     handles, labels = axis.get_legend_handles_labels()
