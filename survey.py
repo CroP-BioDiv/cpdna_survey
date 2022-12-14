@@ -836,10 +836,13 @@ if __name__ == '__main__':
 
     # Additional arguments
     parser.add_argument('-p', '--published', help='Max date of update. In ISO format yyyy-mm-dd.')
-    parser.add_argument('-i', '--images', action='store_true', help='Create images')
     parser.add_argument('-c', '--clade', action='append', help='Clade(s) to use for grouping')
     parser.add_argument('-E', '--email', help='Email address, for Entrez')
     parser.add_argument('-C', '--cache-dir', default='cache_data', help='Cache directory for NCBI queries')
+
+    parser.add_argument('-i', '--images', action='store_true', help='Create images')
+    parser.add_argument('--dpi', type=int, help='DPI value use for saving images')
+    parser.add_argument('--svg', action='store_true', help='Store image in SVG format')
 
     params = parser.parse_args()
 
@@ -856,5 +859,10 @@ if __name__ == '__main__':
     #
     if params.images:
         exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'survey_figures.py')
+        cmd_args = ['--no-preview']
+        if params.dpi:
+            cmd_args.extend(['--dpi', str(params.dpi)])
+        if params.svg:
+            cmd_args.append('--svg')
         for im_type in ('data', 'im', 'wf', 'wg'):
-            subprocess.run([exe, fd_filename, im_type, '--no-preview'], check=True)
+            subprocess.run([exe, fd_filename, im_type] + cmd_args, check=True)
