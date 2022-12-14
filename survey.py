@@ -653,7 +653,7 @@ def create_summary(filename, params, results):
             max_in_clades = ', '.join(f'{c} - {bp["taxon_name"]} ({bp["num_sequences"]})' for c, bp in max_in_clades)
             wide_in_clades = ' ; ' + ', '.join(f'{c} - {sum(int(bp["wide"]) for bp in _bps)}' for c, _bps in clade_bps)
             taxa_outliers_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(len(_bps), sum(int(bool(bp["num_lo"] or bp["num_hi"])) for bp in _bps))}' for c, _bps in clade_bps)
-            outliers_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(clade_2_num_seq[c], sum(bp["num_lo"] + bp["num_hi"] for bp in _bps))}' for c, _bps in clade_bps)
+            outliers_in_clades = ' ; ' + ', '.join(f'{c} - {_pp(sum(bp["num_sequences"] for bp in _bps), sum(bp["num_lo"] + bp["num_hi"] for bp in _bps))}' for c, _bps in clade_bps)
             for c, _bps in clade_bps:
                 _ims = [x['iqr_median'] for x in _bps]
                 iqrm_in_clases += f"\n    {c:>21}  : {', '.join(f'{p}-{sum(int(x > p) for x in _ims)}' for p in iqrm_ps)}"
