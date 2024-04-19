@@ -15,11 +15,16 @@ ncbi_taxa = NCBITaxa()
 
 
 def sheets_to_excel(filename, sheets):
-    writer = pandas.ExcelWriter(filename)
-    for name, columns, rows in sheets:
-        df = pandas.DataFrame(rows, columns=columns)
-        df.to_excel(writer, sheet_name=name, index=False, header=True)
-    writer.save()
+    with pandas.ExcelWriter(filename) as writer:
+        for name, columns, rows in sheets:
+            df = pandas.DataFrame(rows, columns=columns)
+            df.to_excel(writer, sheet_name=name, index=False, header=True)
+
+    # writer = pandas.ExcelWriter(filename)
+    # for name, columns, rows in sheets:
+    #     df = pandas.DataFrame(rows, columns=columns)
+    #     df.to_excel(writer, sheet_name=name, index=False, header=True)
+    # writer.save()
 
 
 def remove_dupl_names(clade_names, last_clade_names, remove_dup_clades):
