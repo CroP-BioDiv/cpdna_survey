@@ -73,4 +73,6 @@ Required libraries:
 
 ## Citation
 
-ToDo: Turudić, A.; Liber, Z.; Grdiša, M.; Jakše, J.; Varga, F.; Šatović, Z. Survey of chloroplast sequence data: how close is close? https://doi.org/...
+Turudić, A.; Liber, Z.; Grdiša, M.; Jakše, J.; Varga, F.; Šatović, Z.
+Variation in Chloroplast Genome Size: Biological Phenomena and Technological Artifacts.
+Plants 2023, 12, 254. https://doi.org/10.3390/plants12020254
